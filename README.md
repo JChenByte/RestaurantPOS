@@ -1,10 +1,43 @@
 # Restaurant POS
+* MVC Architecture (Currently Implemented Model ONLY)
+
+
+Features
+------
+* Manage a single restaurant.
+* Ordering
+ * Add and modify entree
+ * Order Types: Dine-in, Carry-out, Delivery
+ * Order Status: Open, Paid, Delivered
+ * Tip
+ * Tax
+ * Create receipt
+ * Change order type
+* Entree
+ * Add or remove entree from menu
+ * Modify ingredients of an entree
+ * Categorize entree
+ * Adjust pricing
+ * Create menu
+* Inventory Management.
+ * Add new ingredients
+ * Replenish and reduce inventory
+* Employee Management.
+ * Add new employee
+ * Employee role: Regular, Manager
+  * Employee password
 
 
 Author
 ------
 Jie Chen
  - [GitHub](https://github.com/JChenByte) 
+
+
+Release History
+---------------
+See [CHANGELOG.md](https://github.com/JChenByte/RestaurantPOS/blob/master/CHANGELOG.md)
+
 
 License
 -------
