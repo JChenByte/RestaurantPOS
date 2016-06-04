@@ -1,11 +1,11 @@
 # Restaurant POS
 * MVC Architecture (Currently Implemented Model ONLY)
 
-
-Features
+Main Features
 ------
 * Manage a single restaurant.
-* Ordering
+* Serializable.
+* Ordering.
  * Add and modify entree
  * Order Types: Dine-in, Carry-out, Delivery
  * Order Status: Open, Paid, Delivered
@@ -13,7 +13,12 @@ Features
  * Tax
  * Create receipt
  * Change order type
-* Entree
+ * Ability to save orders as txt files.
+* Order files processing.
+  * Multi-threaded
+  * Get aggregated sub-total, total, and tip of orders with id ranging from a to b.
+  * Get sales report of orders with id ranging from a to b.
+* Entree.
  * Add or remove entree from menu
  * Modify ingredients of an entree
  * Categorize entree
