@@ -1,15 +1,24 @@
 package Core;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Jie Chen (github.com/JChenByte) 
  * github.com/JChenByte/RestaurantPOS
  */
-public class EntreeCate {
+public class EntreeCate implements Serializable {
 	private Map<String, Entree> entreeList;
+
+	public Map<String, Entree> getEntreeList() {
+		return entreeList;
+	}
+
 	private String name;
+
+	private static final long serialVersionUID = 1L;
 
 	public EntreeCate(String name) {
 		this.name = name;
@@ -47,8 +56,7 @@ public class EntreeCate {
 	 * @param ingrName
 	 * @param quantity
 	 */
-	public void addIngredient(String entreeName, String ingrName, double 
-			quantity) {
+	public void addIngredient(String entreeName, String ingrName, double quantity) {
 		entreeList.get(entreeName).addIngredient(ingrName, quantity);
 	}
 
@@ -80,4 +88,5 @@ public class EntreeCate {
 
 		return temp;
 	}
+
 }

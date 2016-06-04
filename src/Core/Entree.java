@@ -1,5 +1,6 @@
 package Core;
 
+import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,11 +9,13 @@ import java.util.Map;
  * @author Jie Chen (github.com/JChenByte) 
  * github.com/JChenByte/RestaurantPOS
  */
-public class Entree {
+public class Entree implements Serializable {
 	private String name;
 	private double price;
 	private String category;
 	private Map<String, Double> ingredients;
+
+	private static final long serialVersionUID = 1L;
 
 	public Entree(String name, double price, String category) {
 		this.name = name;
@@ -72,4 +75,18 @@ public class Entree {
 		this.price = price;
 	}
 
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		} else if (!(obj instanceof Entree)) {
+			return false;
+		} else {
+			return this.name.equals(((Entree) obj).name);
+		}
+	}
+
+	public int hashCode() {
+		return name.hashCode();
+
+	}
 }

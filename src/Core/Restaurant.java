@@ -1,5 +1,11 @@
 package Core;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -9,21 +15,28 @@ import java.util.Set;
  * @author Jie Chen (github.com/JChenByte) 
  * github.com/JChenByte/RestaurantPOS
  */
-public class Restaurant {
+public class Restaurant implements Serializable {
 	private String resturantName;
 	private double taxRate;
 	private int currentOrderId;
+	private String phoneNum;
+	private String address;
 	private Map<String, Ingredient> inventory;
 	private Map<String, Employee> employeeList;
 	private Map<Integer, Order> orders;
 	private Map<String, EntreeCate> entreeList;
 
+	private static final long serialVersionUID = 1L;
+
 	/**
 	 * @param resturantName
 	 */
-	public Restaurant(String resturantName, double taxRate) {
+	public Restaurant(String resturantName, double taxRate, String phoneNum, 
+			String address) {
 		this.resturantName = resturantName;
 		this.taxRate = taxRate;
+		this.phoneNum = phoneNum;
+		this.address = address;
 		currentOrderId = 0;
 		inventory = new HashMap<String, Ingredient>();
 		employeeList = new HashMap<String, Employee>();
@@ -183,10 +196,8 @@ public class Restaurant {
 	 * @param IngredientName
 	 * @param quantity
 	 */
-	public void addIngredientToEntree(String category, String entreeName, 
-			String IngredientName, double quantity) {
-		entreeList.get(category).addIngredient(entreeName, IngredientName, 
-				quantity);
+	public void addIngredientToEntree(String category, String entreeName, String IngredientName, double quantity) {
+		entreeList.get(category).addIngredient(entreeName, IngredientName, quantity);
 	}
 
 	/**
@@ -208,7 +219,7 @@ public class Restaurant {
 	 * @param entreeName
 	 * @param price
 	 */
-	public void adjustEntreePrice(String category, String entreeName, double 
+	public void adjustEntreePrice(String category, String entreeName, double
 			price) {
 		entreeList.get(category).adjustPrice(entreeName, price);
 	}
@@ -267,14 +278,20 @@ public class Restaurant {
 	}
 
 	/**
-	 * Add entrees to an order (can be multiple)
-	 * 
 	 * @param orderId
 	 * @param entree
 	 * @param numOfEntree
+	 * @return true if add successfully, false if entree does not exist.
 	 */
-	public void addEntreeToOrder(int orderId, Entree entree, int numOfEntree) {
-		orders.get(orderId).addEntree(entree, numOfEntree);
+	public boolean addEntreeToOrder(int orderId, String entree, int numOfEntree) {
+		Entree temp = getEntreeBasedOnName(entree);
+		if (temp == null) {
+			return false;
+		} else {
+			orders.get(orderId).addEntree(temp, numOfEntree);
+			return true;
+		}
+
 	}
 
 	/**
@@ -282,9 +299,16 @@ public class Restaurant {
 	 * 
 	 * @param orderId
 	 * @param entree
+	 * @return false if entree does not exist.
 	 */
-	public void removeEntreeFromOrder(int orderId, Entree entree) {
-		orders.get(orderId).removeEntree(entree);
+	public boolean removeEntreeFromOrder(int orderId, String entree) {
+		Entree temp = getEntreeBasedOnName(entree);
+		if (temp == null) {
+			return false;
+		} else {
+			orders.get(orderId).removeEntree(temp);
+			return true;
+		}
 	}
 
 	/**
@@ -320,4 +344,156 @@ public class Restaurant {
 	public void changeAddressOfOrder(int orderId, String address) {
 		orders.get(orderId).setAddress(address);
 	}
+
+	/**
+	 * Serialize the Restaurant object and store it in the specified file.
+	 */
+	public void saveRestaurant(Restaurant restaurant, String fileName) {
+		try {
+			File file = new File(fileName);
+			ObjectOutputStream output = new ObjectOutputStream(new 
+					FileOutputStream(file));
+			output.writeObject(restaurant);
+			output.close();
+		} catch (Exception e) {
+			// Do nothing.
+		}
+
+	}
+
+	/**
+	 * It will return a Manager object based on the serialized data found in the
+	 * specified file.
+	 */
+	public Restaurant restoreRestaurant(String fileName) {
+		try {
+			File file = new File(fileName);
+			if (!file.exists()) {
+				// Do nnothing
+			} else {
+				ObjectInputStream input = new ObjectInputStream(new 
+						FileInputStream(file));
+				Restaurant restaurant = (Restaurant) input.readObject();
+				input.close();
+				return restaurant;
+			}
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+		return null;
+	}
+
+	/**
+	 * Export an order to a file named order[order_id] .
+	 * 
+	 * @param id
+	 */
+	public void saveOrderToFile(int id) {
+		try {
+			orders.get(id).saveToFile();
+		} catch (Exception e) {
+			System.err.println(e);
+		}
+	}
+
+	/**
+	 * Export all orders of which its id within beginId and endId to multiple
+	 * files named order[order_id] .
+	 * 
+	 * @param beginId
+	 * @param endId
+	 */
+	public void saveOrderToFile(int beginId, int endId) {
+		for (int i = beginId; i <= endId; i++) {
+			try {
+				orders.get(i).saveToFile();
+			} catch (Exception e) {
+				System.err.println(e);
+			}
+
+		}
+
+	}
+
+	private int orderFileProcBeginId = 0;
+	private int orderFileProcEndId = 0;
+	private OrderFileProc orderFileProc;
+
+	/**
+	 * Initialize an OrderFileProc (necessary for order file processing method).
+	 * 
+	 * @param beginId
+	 * @param endId
+	 */
+	public void orderFileProcInit(int beginId, int endId) {
+		orderFileProcBeginId = beginId;
+		orderFileProcEndId = endId;
+		Map<String, Entree> entr = new HashMap<String, Entree>();
+		for (EntreeCate cate : entreeList.values()) {
+			for (Entree e : cate.getEntreeList().values()) {
+				entr.put(e.getName(), e);
+			}
+		}
+		orderFileProc = new OrderFileProc(entr, beginId, endId);
+	}
+
+	public double getOrderFileProcSubtotal(int beginId, int endId) {
+		if (orderFileProcBeginId == beginId && orderFileProcEndId == endId) {
+			return orderFileProc.getSubtotal();
+		} else {
+			orderFileProcInit(beginId, endId);
+			return orderFileProc.getSubtotal();
+		}
+
+	}
+
+	public double getOrderFileProcTotal(int beginId, int endId) {
+		if (orderFileProcBeginId == beginId && orderFileProcEndId == endId) {
+			return orderFileProc.getTotal();
+		} else {
+			orderFileProcInit(beginId, endId);
+			return orderFileProc.getTotal();
+		}
+
+	}
+
+	public double getOrderFileProcTip(int beginId, int endId) {
+		if (orderFileProcBeginId == beginId && orderFileProcEndId == endId) {
+			return orderFileProc.getTip();
+		} else {
+			orderFileProcInit(beginId, endId);
+			return orderFileProc.getTip();
+		}
+
+	}
+
+	public String getOrderFileProcOrderDetails(int beginId, int endId) {
+		if (orderFileProcBeginId == beginId && orderFileProcEndId == endId) {
+			return orderFileProc.getOrderDetails();
+		} else {
+			orderFileProcInit(beginId, endId);
+			return orderFileProc.getOrderDetails();
+		}
+
+	}
+
+	/**
+	 * Find an entree based on the entree name provided.
+	 * 
+	 * @param name
+	 * @return entree
+	 */
+	public Entree getEntreeBasedOnName(String name) {
+		Entree temp = new Entree(name, 1, "none");
+		for (EntreeCate cate : entreeList.values()) {
+			for (Entree e : cate.getEntreeList().values()) {
+				if (temp.equals(e)) {
+					return e;
+				}
+			}
+		}
+
+		return null;
+	}
+
 }

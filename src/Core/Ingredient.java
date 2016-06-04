@@ -1,13 +1,17 @@
 package Core;
 
+import java.io.Serializable;
+
 /**
  * @author Jie Chen (github.com/JChenByte) 
  * github.com/JChenByte/RestaurantPOS
  */
-public class Ingredient {
+public class Ingredient implements Serializable {
 	private String name;
 	private double amountLeft;
 	private String unit;
+
+	private static final long serialVersionUID = 1L;
 
 	public Ingredient(String name, double amountLeft, String unit) {
 		this.name = name;

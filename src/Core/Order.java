@@ -1,5 +1,8 @@
 package Core;
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Serializable;
 import java.text.NumberFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,7 +11,7 @@ import java.util.Map;
  * @author Jie Chen (github.com/JChenByte) 
  * github.com/JChenByte/RestaurantPOS
  */
-public class Order {
+public class Order implements Serializable {
 	private int orderType;
 	private int orderStatus;
 	private int id;
@@ -18,6 +21,8 @@ public class Order {
 	private double taxRate;
 	private double tip;
 	private Map<Entree, Integer> entreeList;
+
+	private static final long serialVersionUID = 1L;
 
 	public Order(String name, String address, String phoneNum, int orderType, 
 			int id, double taxRate) {
@@ -177,8 +182,8 @@ public class Order {
 					+ NumberFormat.getCurrencyInstance().format(entree.
 							getPrice()) + "\n";
 		}
-		temp += "\nSubtotal: " + NumberFormat.getCurrencyInstance().format(
-				this.subtotal()) + "\nTax ("
+		temp += "\nSubtotal: " + NumberFormat.getCurrencyInstance().format
+				(this.subtotal()) + "\nTax ("
 				+ (taxRate * 100) + "%): " + NumberFormat.getCurrencyInstance().
 				format(this.subtotal() * taxRate)
 				+ "\nTotal: " + NumberFormat.getCurrencyInstance().format(this.
@@ -234,4 +239,29 @@ public class Order {
 	public void setPhoneNum(String phoneNum) {
 		this.phoneNum = phoneNum;
 	}
+
+	public void saveToFile() {
+
+		try {
+			/* Try with an invalid filename */
+			String filename = "order" + id + ".txt";
+			boolean append = false;
+			FileWriter fileWriter = new FileWriter(filename, append);
+
+			fileWriter.write(orderType + " " + orderStatus + " " + id + "\n" + 
+			name + "\n" + address + "\n" + phoneNum
+					+ "\n" + taxRate + " " + tip + "\n");
+			fileWriter.write(subtotal() + " " + total() + " " + finalPrice() +
+					"\n");
+			for (Entree entree : entreeList.keySet()) {
+				fileWriter.write(entree.getName() + "\n");
+				fileWriter.write(entreeList.get(entree) + "\n");
+				fileWriter.write(entree.getPrice() + "\n");
+			}
+			fileWriter.close();
+		} catch (IOException e) {
+			System.err.println(e.getMessage());
+		}
+	}
+
 }
